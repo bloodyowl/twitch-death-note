@@ -91,7 +91,6 @@ module Book = {
     })
     let inside = css({
       "paddingBottom": "144.99411072%",
-      "boxShadow": "inset 0 0 0 2px #000",
       "position": "relative",
     })
     let insideContents = css({
@@ -104,6 +103,8 @@ module Book = {
       "left": 0,
       "right": 0,
       "bottom": 0,
+      "boxShadow": "inset 0 0 0 4px #000",
+      "backgroundColor": "#FFF",
     })
   }
   let barCodeUrl = Router.makeHref("/assets/images/barcode.png")
@@ -111,6 +112,9 @@ module Book = {
   let make = () => {
     <div className=Styles.root>
       <div className=Styles.container>
+        <div className=Styles.inside>
+          <div className=Styles.insideContents> <ActualApp /> </div>
+        </div>
         <div className=Styles.cover>
           <div className=Styles.coverBack>
             <div className=Styles.sticker>
@@ -122,9 +126,6 @@ module Book = {
             </div>
           </div>
         </div>
-        <div className=Styles.inside>
-          <div className=Styles.insideContents> <ActualApp /> </div>
-        </div>
       </div>
     </div>
   }
@@ -132,11 +133,17 @@ module Book = {
 
 module Styles = {
   open Emotion
+  let woodUrl = Router.makeHref("/assets/images/wood.jpg")
+
   let container = css({
     "display": "flex",
     "alignItems": "center",
     "justifyContent": "center",
     "flexGrow": 1,
+    "backgroundImage": `url("${woodUrl}")`,
+    "backgroundColor": "#B99579",
+    "backgroundSize": "cover",
+    "backgroundPosition": "50% 50%",
   })
 }
 
