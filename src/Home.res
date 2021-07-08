@@ -1,7 +1,111 @@
+let killable = Belt.Set.String.fromArray([
+  "darth vader",
+  "bowser",
+  "dolores umbridge",
+  "gerald darmanin",
+  "thanos",
+  "joj",
+])
+
+let getImageUrl = killableName => {
+  "/assets/images/" ++
+  killableName->String.toLowerCase->String.replaceRegExp(%re("/\s+/"), "_") ++ ".png"
+}
+
 module ActualApp = {
+  module Styles = {
+    open Emotion
+    let image = css({
+      "width": "200px",
+      "height": "auto",
+    })
+    let killableContainer = css({
+      "position": "relative",
+      "width": "200px",
+      "minHeight": "200px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "textAlign": "center",
+    })
+    let fadeAndScaleAnimation = keyframes({
+      "from": {
+        "transform": "scale(1.05)",
+        "opacity": 0,
+      },
+    })
+    let skull = css({
+      "position": "absolute",
+      "top": 0,
+      "left": 0,
+      "right": 0,
+      "bottom": 0,
+      "backgroundColor": "rgba(255, 255, 255, 0.3)",
+      "backgroundImage": `url("/assets/images/skull.png")`,
+      "backgroundPosition": "50% 50%",
+      "backgroundSize": "contain",
+      "animation": `300ms ease-in-out ${fadeAndScaleAnimation}`,
+    })
+  }
+
   @react.component
   let make = () => {
-    <div> {`TO DO: the actual app`->React.string} </div>
+    let (input, setInput) = React.useState(() => "")
+    let (scheduledKills, setScheduledKills) = React.useState(() => [])
+    let (effectivelyKilled, setEffectivelyKilled) = React.useState(() => Belt.Set.String.empty)
+    <div>
+      {scheduledKills
+      ->Array.mapWithIndex((scheduledKill, index) => {
+        <div key={index->Int.toString} className=Styles.killableContainer>
+          {if killable->Belt.Set.String.has(scheduledKill) {
+            <img src={getImageUrl(scheduledKill)} alt=scheduledKill className=Styles.image />
+          } else {
+            <div> {scheduledKill->React.string} </div>
+          }}
+          {effectivelyKilled->Belt.Set.String.has(scheduledKill)
+            ? <div className=Styles.skull />
+            : React.null}
+        </div>
+      })
+      ->React.array}
+      <input
+        type_="text"
+        value=input
+        placeholder={"Enter someone to kill"}
+        onChange={event => {
+          let target = event->ReactEvent.Form.target
+          let value = target["value"]
+          setInput(_ => value)
+        }}
+        onKeyDown={event => {
+          if event->ReactEvent.Keyboard.key === "Enter" {
+            setInput(_ => "")
+            let normalizedInput = input->String.trim->String.toLowerCase
+            setScheduledKills(scheduledKills =>
+              scheduledKills->Array.concat([
+                killable->Belt.Set.String.has(normalizedInput)
+                  ? normalizedInput
+                  : input->String.trim,
+              ])
+            )
+            if scheduledKills->Array.length >= 2 {
+              let notDeadYet =
+                scheduledKills->Array.filter(scheduledKill =>
+                  !(effectivelyKilled->Belt.Set.String.has(scheduledKill))
+                )
+              let randomIndex =
+                Math.floor(Math.random() *. notDeadYet->Array.length->Int.toFloat)->Float.toInt
+              setEffectivelyKilled(effectivelyKilled => {
+                switch notDeadYet[randomIndex] {
+                | None => effectivelyKilled
+                | Some(toKillNext) => effectivelyKilled->Belt.Set.String.add(toKillNext)
+                }
+              })
+            }
+          }
+        }}
+      />
+    </div>
   }
 }
 
@@ -105,6 +209,8 @@ module Book = {
       "bottom": 0,
       "boxShadow": "inset 0 0 0 4px #000",
       "backgroundColor": "#FFF",
+      "overflowY": "auto",
+      "flexGrow": 1,
     })
   }
   let barCodeUrl = Router.makeHref("/assets/images/barcode.png")
