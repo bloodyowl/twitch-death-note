@@ -7,8 +7,10 @@ let killable = Belt.Set.String.fromArray([
 ])
 
 let getImageUrl = killableName => {
-  "/assets/images/" ++
-  killableName->String.toLowerCase->String.replaceRegExp(%re("/\s+/"), "_") ++ ".png"
+  Router.makeHref(
+    "/assets/images/" ++
+    killableName->String.toLowerCase->String.replaceRegExp(%re("/\s+/"), "_") ++ ".png",
+  )
 }
 
 module ActualApp = {
@@ -33,6 +35,7 @@ module ActualApp = {
         "opacity": 0,
       },
     })
+    let skullUrl = Router.makeHref("/assets/images/skull.png")
     let skull = css({
       "position": "absolute",
       "top": 0,
@@ -40,7 +43,7 @@ module ActualApp = {
       "right": 0,
       "bottom": 0,
       "backgroundColor": "rgba(255, 255, 255, 0.3)",
-      "backgroundImage": `url("/assets/images/skull.png")`,
+      "backgroundImage": `url("${skullUrl}")`,
       "backgroundPosition": "50% 50%",
       "backgroundSize": "contain",
       "animation": `300ms ease-in-out ${fadeAndScaleAnimation}`,
