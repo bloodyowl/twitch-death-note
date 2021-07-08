@@ -4,7 +4,6 @@ let killable = Belt.Set.String.fromArray([
   "dolores umbridge",
   "gerald darmanin",
   "thanos",
-  "joj",
 ])
 
 let getImageUrl = killableName => {
