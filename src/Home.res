@@ -16,9 +16,34 @@ let getImageUrl = killableName => {
 module ActualApp = {
   module Styles = {
     open Emotion
+    let container = css({
+      "display": "flex",
+      "flexDirection": "column",
+      "alignItems": "stretch",
+      "flexGrow": 1,
+    })
+    let written = css({
+      "display": "flex",
+      "flexDirection": "column",
+      "alignItems": "center",
+      "flexGrow": 1,
+      "height": 1,
+      "overflowY": "auto",
+    })
     let image = css({
       "width": "200px",
       "height": "auto",
+    })
+    let input = css({
+      "position": "sticky",
+      "bottom": 0,
+      "width": "100%",
+      "boxSizing": "border-box",
+      "border": "none",
+      "padding": 10,
+      "borderTop": "3px solid #000",
+      "fontSize": "inherit",
+      "fontFamily": "inherit",
     })
     let killableContainer = css({
       "position": "relative",
@@ -51,28 +76,45 @@ module ActualApp = {
     })
   }
 
+  external elementAsObject: Dom.element => {..} = "%identity"
+
   @react.component
   let make = () => {
     let (input, setInput) = React.useState(() => "")
     let (scheduledKills, setScheduledKills) = React.useState(() => [])
     let (effectivelyKilled, setEffectivelyKilled) = React.useState(() => Belt.Set.String.empty)
-    <div>
-      {scheduledKills
-      ->Array.mapWithIndex((scheduledKill, index) => {
-        <div key={index->Int.toString} className=Styles.killableContainer>
-          {if killable->Belt.Set.String.has(scheduledKill) {
-            <img src={getImageUrl(scheduledKill)} alt=scheduledKill className=Styles.image />
-          } else {
-            <div> {scheduledKill->React.string} </div>
-          }}
-          {effectivelyKilled->Belt.Set.String.has(scheduledKill)
-            ? <div className=Styles.skull />
-            : React.null}
-        </div>
-      })
-      ->React.array}
+    let scrollViewRef = React.useRef(Nullable.null)
+
+    React.useEffect1(() => {
+      switch scrollViewRef.current->Nullable.toOption {
+      | Some(scrollView) =>
+        let scrollView = scrollView->elementAsObject
+        scrollView["scrollTop"] = scrollView["scrollHeight"]
+      | None => ()
+      }
+      None
+    }, [scheduledKills])
+
+    <div className=Styles.container>
+      <div className=Styles.written ref={ReactDOM.Ref.domRef(scrollViewRef)}>
+        {scheduledKills
+        ->Array.mapWithIndex((scheduledKill, index) => {
+          <div key={index->Int.toString} className=Styles.killableContainer>
+            {if killable->Belt.Set.String.has(scheduledKill) {
+              <img src={getImageUrl(scheduledKill)} alt=scheduledKill className=Styles.image />
+            } else {
+              <div> {scheduledKill->React.string} </div>
+            }}
+            {effectivelyKilled->Belt.Set.String.has(scheduledKill)
+              ? <div className=Styles.skull />
+              : React.null}
+          </div>
+        })
+        ->React.array}
+      </div>
       <input
         type_="text"
+        className=Styles.input
         value=input
         placeholder={"Enter someone to kill"}
         onChange={event => {
@@ -201,19 +243,16 @@ module Book = {
       "position": "relative",
     })
     let insideContents = css({
-      "display": "flex",
-      "flexDirection": "column",
-      "alignItems": "center",
-      "justifyContent": "center",
       "position": "absolute",
       "top": 0,
       "left": 0,
       "right": 0,
       "bottom": 0,
       "boxShadow": "inset 0 0 0 4px #000",
+      "padding": 4,
       "backgroundColor": "#FFF",
-      "overflowY": "auto",
-      "flexGrow": 1,
+      "display": "flex",
+      "flexDirection": "column",
     })
   }
   let barCodeUrl = Router.makeHref("/assets/images/barcode.png")
