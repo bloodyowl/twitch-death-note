@@ -44,6 +44,7 @@ module ActualApp = {
       "bottom": 0,
       "backgroundColor": "rgba(255, 255, 255, 0.3)",
       "backgroundImage": `url("${skullUrl}")`,
+      "backgroundRepeat": "no-repeat",
       "backgroundPosition": "50% 50%",
       "backgroundSize": "contain",
       "animation": `300ms ease-in-out ${fadeAndScaleAnimation}`,
